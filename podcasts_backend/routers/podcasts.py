@@ -4,5 +4,5 @@ router = APIRouter()
 
 
 @router.get("/")
-async def index():
+async def index() -> dict[str, str]:
     return {"message": "Hello World"}

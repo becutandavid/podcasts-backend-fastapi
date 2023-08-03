@@ -1,19 +1,19 @@
 from abc import ABC, abstractmethod
 
-from ..models.models import (
+from ...schemas.schemas import (
     Episode,
     EpisodeVector,
     Query,
     QueryResult,
     QueryWithEmbedding,
 )
-from ..services.embeddings import get_embeddings
+from ...services.embeddings import get_embeddings
 
 
 class DataStore(ABC):
     async def upsert(
         self, episodes: list[Episode], delete_all: bool = False
-    ) -> list[str]:
+    ) -> list[int]:
         """
         Takes in a list of episodes and inserts them into the database.
         First deletes all the existing vectors with the episode id (if necessary,
@@ -22,7 +22,7 @@ class DataStore(ABC):
         """
         # Delete any existing vectors for documents with the input document ids
         await self.delete(
-            ids=[episode.id for episode in episodes if episode.id],
+            ids=[episode.id for episode in episodes if episode.id],  # type: ignore
             delete_all=delete_all,
         )
 
@@ -35,7 +35,7 @@ class DataStore(ABC):
         return await self._upsert(episodes_embeddings)
 
     @abstractmethod
-    async def _upsert(self, episodes: list[EpisodeVector]) -> list[str]:
+    async def _upsert(self, episodes: list[EpisodeVector]) -> list[int]:
         """
         Takes in a list of episodes and inserts them into the database.
         Return a list of episode ids.

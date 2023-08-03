@@ -1,4 +1,5 @@
-from sentence_transformers import SentenceTransformer  # type: ignore
+# mypy: allow-untyped-defs
+from sentence_transformers import SentenceTransformer
 
 # TODO: implement Ray serve
 # TODO: cache folder from config
@@ -16,4 +17,4 @@ def get_embeddings(descriptions: list[str]) -> list[list[float]]:
         list[float]: list of descriptions
     """
     embeddings = model.encode(descriptions, convert_to_numpy=True)
-    return embeddings.tolist() # type: ignore
+    return embeddings.tolist()  # type: ignore

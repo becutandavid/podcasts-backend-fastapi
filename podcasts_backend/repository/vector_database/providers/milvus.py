@@ -7,11 +7,11 @@ from pymilvus import (
     DataType,
     FieldSchema,
     MilvusException,
-    connections,  # type: ignore
+    connections,
     utility,
 )
 
-from podcasts_backend.models.models import (
+from podcasts_backend.schemas.schemas import (
     EpisodeMetadata,
     EpisodeMetadataFilter,
     EpisodeVector,
@@ -19,7 +19,8 @@ from podcasts_backend.models.models import (
     QueryResult,
     QueryWithEmbedding,
 )
-from podcasts_backend.repository.datastore import DataStore
+
+from ..datastore import DataStore
 
 MILVUS_COLLECTION = os.environ.get("MILVUS_COLLECTION") or "c" + uuid4().hex
 MILVUS_HOST = os.environ.get("MILVUS_HOST") or "localhost"
@@ -33,7 +34,7 @@ OUTPUT_DIM = 768
 TOP_K = 20
 
 SCHEMA = [
-    FieldSchema(name="pk", dtype=DataType.VARCHAR, is_primary=True, max_length=1000),
+    FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, max_length=1000),
     FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=10000),
     FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=OUTPUT_DIM),
     FieldSchema(name="podcast_id", dtype=DataType.INT64),
@@ -46,8 +47,8 @@ class MilvusDataStore(DataStore):
     def __init__(
         self,
         override: bool = False,
-        index_params: dict | None = None,
-        search_params: dict | None = None,
+        index_params: dict | None = None,  # type: ignore
+        search_params: dict | None = None,  # type: ignore
     ) -> None:
         # Set the index_params to passed in or the default
         self.index_params = index_params
@@ -76,8 +77,8 @@ class MilvusDataStore(DataStore):
             self.alias = uuid4().hex
             connections.connect(
                 self.alias,
-                user=MILVUS_USER,  # type: ignore
-                password=MILVUS_PASSWORD,  # type: ignore
+                user=MILVUS_USER,
+                password=MILVUS_PASSWORD,
                 host=MILVUS_HOST,
                 port=MILVUS_PORT,
                 secure=MILVUS_USE_SECURITY,
@@ -117,7 +118,7 @@ class MilvusDataStore(DataStore):
             # If the collection exists, point to it
             self.col = Collection(
                 MILVUS_COLLECTION, consistency_level="Strong", using=self.alias
-            )  # type: ignore
+            )
 
         # If no index on the collection, create one
         if len(self.col.indexes) == 0:
@@ -170,7 +171,7 @@ class MilvusDataStore(DataStore):
             episode.metadata.language,
         ]
 
-    async def _upsert(self, episodes: list[EpisodeVector]) -> list[str]:
+    async def _upsert(self, episodes: list[EpisodeVector]) -> list[int]:
         """Upsert a batch of data into the collection.
         Args:
             data (list[dict]): The data to upsert.
@@ -236,7 +237,7 @@ class MilvusDataStore(DataStore):
         )
 
         query_results: list[EpisodeVectorWithScore] = []
-        for result in results[0]:  # type: ignore
+        for result in results[0]:
             score = result.score
             episode_with_score = EpisodeVectorWithScore(
                 metadata=EpisodeMetadata(
@@ -247,7 +248,7 @@ class MilvusDataStore(DataStore):
                 text=result.entity.get("text"),
                 score=score,
                 embedding=query.embedding,
-                id=result.id,  # type: ignore
+                id=result.id,
             )
 
             query_results.append(episode_with_score)
@@ -296,10 +297,10 @@ class MilvusDataStore(DataStore):
                 ids_chunk = ids[:chunk_size]
                 ids = ids[chunk_size:]
                 # Add quotation marks around the string format id
-                ids_chunk = [f'"{str(id)}"' for id in ids_chunk]
+                ids_chunk = [f"{str(id)}" for id in ids_chunk]
                 # delete the ids
                 res = self.col.delete(f"pk in [{','.join(ids_chunk)}]")
-                delete_count += int(res.delete_count)  # type: ignore
+                delete_count += int(res.delete_count)
 
         return True
 

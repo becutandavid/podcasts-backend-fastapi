@@ -1,61 +1,49 @@
-from pydantic import BaseModel
+from datetime import datetime
 
-# class Podcast(SQLModel):
-#     author: str
-#     categories: list[str]
-#     description: str
-#     explicit: bool
-#     generator: str
-#     imageURL: str
-#     language: str
-#     lastBuildDate: str
-#     link: str
+from sqlmodel import Field, Relationship, SQLModel
 
 
-# class PodcastTable(Podcast, table=True):
-#     id: int = Field(primary_key=True)
-
-
-class EpisodeMetadata(BaseModel):
+class Podcast(SQLModel):
     podcast_id: int
-    category: str | None
+    title: str
+    author: str | None
+    categories: list[str] = []
+    description: str | None
+    explicit: bool | None
+    generator: str | None
+    imageURL: str | None
     language: str | None
+    lastBuildDate: datetime | None
+    link: str | None
+    summary: str | None
+    owner_name: str | None
+    owner_email: str | None
+
+    # @property
+    # def num_episodes(self) -> int:
+    #     return len(Podcast.episodes)
 
 
-class Episode(BaseModel):
-    id: str
-    metadata: EpisodeMetadata
-    text: str
+class PodcastTable(Podcast, table=True):
+    podcast_id: int = Field(primary_key=True)
+    episodes: list["EpisodeTable"] = Relationship(back_populates="podcast")
 
 
-class EpisodeVector(Episode):
-    embedding: list[float]
+class EpisodeModel(SQLModel):
+    description: str | None
+    duration: int | None
+    enclosure: str
+    guid: str | None
+    keywords: str | None
+    link: str | None
+    ner: list[str] | None
+    podcast_id: int
+    pubDate: datetime | None
+    summary: str | None
+    title: str
 
 
-class EpisodeVectorWithScore(EpisodeVector):
-    score: float
-
-
-class EpisodeMetadataFilter(BaseModel):
-    podcast_id: int | None
-    category: str | None
-    language: str | None
-
-
-class Query(BaseModel):
-    query: str
-    filter: EpisodeMetadataFilter | None = None
-    top_k: int = 20
-
-
-class QueryWithEmbedding(Query):
-    embedding: list[float]
-
-
-class QueryResult(BaseModel):
-    query: str
-    results: list[EpisodeVectorWithScore]
-
-
-class ResponseQueryResult(BaseModel):
-    results: list[QueryResult]
+class EpisodeTable(EpisodeModel, table=True):
+    episode_id: int | None = Field(primary_key=True, default=None)
+    podcast_id: int = Field(foreign_key="podcasttable.podcast_id")
+    podcast: PodcastTable = Relationship(back_populates="episodes")
