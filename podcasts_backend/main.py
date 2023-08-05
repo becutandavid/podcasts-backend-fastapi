@@ -1,17 +1,18 @@
-import fastapi
+from fastapi import FastAPI
 
-from podcasts_backend.repository.repository import Repository
-
-from .repository.db.postgres import engine, init_db
+from .repository.db.postgres import init_db, repository
 from .repository.mock_data_upload import upload_data
 from .repository.vector_database.providers.milvus import MilvusDataStore
+from .routers import auth, podcasts
 from .schemas.schemas import Query, ResponseQueryResult
 
-app = fastapi.FastAPI()
-milvus_db = MilvusDataStore()
+app = FastAPI()
 
-repository = Repository(db_session=engine, vector_db_session=milvus_db)
-# app.include_router(podcasts.router)
+milvus_db = MilvusDataStore()
+# repository = Repository(db_session=engine, vector_db_session=milvus_db)
+
+app.include_router(podcasts.router)
+app.include_router(auth.router)
 
 
 @app.on_event("startup")

@@ -7,7 +7,7 @@ class Podcast(SQLModel):
     podcast_id: int
     title: str
     author: str | None
-    categories: list[str] = []
+    categories: str | None
     description: str | None
     explicit: bool | None
     generator: str | None

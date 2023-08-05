@@ -1,5 +1,5 @@
 from sqlalchemy.engine import Engine
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from podcasts_backend.models.models import (
     EpisodeModel,
@@ -27,9 +27,7 @@ class Repository:
 
     async def add_many_podcasts(self, objs: list[Podcast]) -> list[PodcastTable]:
         with Session(self.db_session) as session:
-            already_in_db = [
-                podcast.podcast_id for podcast in session.query(PodcastTable).all()
-            ]
+            already_in_db = session.exec(select(PodcastTable.podcast_id)).all()
             podcasts = [
                 PodcastTable.from_orm(obj)
                 for obj in objs
@@ -59,21 +57,15 @@ class Repository:
             if not podcast:
                 raise ValueError("Podcast not found")
             episode = EpisodeTable.from_orm(obj, update={"podcast": podcast})
-            print("-----------------")
-            print(episode)
-            print("-" * 20)
             session.add(episode)
             session.commit()
             session.refresh(episode)
-            print("-----------------")
-            print(episode)
-            print("-" * 20)
 
             episode_vector = Episode(
                 id=episode.episode_id,  # type: ignore
                 metadata=EpisodeMetadata(
                     podcast_id=episode.podcast_id,
-                    category=" ".join(podcast.categories),
+                    category=podcast.categories,
                     language=podcast.language,
                 ),
                 text=episode.title,
@@ -115,7 +107,7 @@ class Repository:
                     id=episode.episode_id,  # type: ignore
                     metadata=EpisodeMetadata(
                         podcast_id=episode.podcast_id,
-                        category=" ".join(podcast.categories),  # type: ignore
+                        category=podcast.categories,  # type: ignore
                         language=podcast.language,  # type: ignore
                     ),
                     text=episode.title,
@@ -131,16 +123,14 @@ class Repository:
 
     def list_podcasts(self) -> list[PodcastTable]:
         with Session(self.db_session) as session:
-            podcasts = session.query(PodcastTable).all()
+            podcasts = session.exec(select(PodcastTable)).all()
             return podcasts
 
     def list_episodes_from_podcast(self, podcast_id: int) -> list[EpisodeTable]:
         with Session(self.db_session) as session:
-            episodes = (
-                session.query(EpisodeTable)
-                .filter(EpisodeTable.podcast_id == podcast_id)
-                .all()
-            )
+            episodes = session.exec(
+                select(EpisodeTable).where(EpisodeTable.podcast_id == podcast_id)
+            ).all()
             return episodes
 
     def get_podcast(self, podcast_id: int) -> PodcastTable:

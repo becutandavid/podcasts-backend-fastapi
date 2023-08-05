@@ -3,7 +3,6 @@ from sentence_transformers import SentenceTransformer
 
 # TODO: implement Ray serve
 # TODO: cache folder from config
-print("loading model...")
 model = SentenceTransformer("all-mpnet-base-v2", cache_folder="/podcasts_data")
 
 

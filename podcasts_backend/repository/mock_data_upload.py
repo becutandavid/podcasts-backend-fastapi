@@ -19,7 +19,7 @@ async def upload_data(repository: Repository) -> bool:
             podcast_id=x.name,
             title=x["title"],
             author=x["author"],
-            categories=x["categories"],
+            categories=",".join(x["categories"]),
             description=x["description"],
             explicit=x["explicit"],
             generator=str(x.get("generator", "")),
@@ -52,8 +52,8 @@ async def upload_data(repository: Repository) -> bool:
         episodes_list.append(episode)
 
     await repository.add_many_podcasts(podcasts)
-    for episode in episodes_list:
-        await repository.add_episode(episode)
-    # await repository.add_many_episodes(episodes_list)
+    # for episode in episodes_list:
+    #     await repository.add_episode(episode)
+    await repository.add_many_episodes(episodes_list)
 
     return True
