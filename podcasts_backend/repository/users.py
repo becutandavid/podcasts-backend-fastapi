@@ -1,7 +1,9 @@
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, select
 
-from ..models.users import User, UserTable
+from ..models.models import UserTable
+
+from ..schemas.users import User
 
 
 class UserRepository:

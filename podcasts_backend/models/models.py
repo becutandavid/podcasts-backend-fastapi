@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import VARCHAR, Column, Field, Relationship, SQLModel
 
 
 class Podcast(SQLModel):
@@ -19,14 +19,18 @@ class Podcast(SQLModel):
     owner_name: str | None
     owner_email: str | None
 
-    # @property
-    # def num_episodes(self) -> int:
-    #     return len(Podcast.episodes)
+
+class FavoritePodcastLink(SQLModel, table=True):
+    user_id: int = Field(foreign_key="usertable.id", primary_key=True)
+    podcast_id: int = Field(foreign_key="podcasttable.podcast_id", primary_key=True)
 
 
 class PodcastTable(Podcast, table=True):
     podcast_id: int = Field(primary_key=True)
     episodes: list["EpisodeTable"] = Relationship(back_populates="podcast")
+    user_favorites: list["UserTable"] = Relationship(
+        back_populates="favorite_podcasts", link_model=FavoritePodcastLink
+    )
 
 
 class EpisodeModel(SQLModel):
@@ -47,3 +51,17 @@ class EpisodeTable(EpisodeModel, table=True):
     episode_id: int | None = Field(primary_key=True, default=None)
     podcast_id: int = Field(foreign_key="podcasttable.podcast_id")
     podcast: PodcastTable = Relationship(back_populates="episodes")
+
+
+class UserTable(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    username: str = Field(
+        sa_column=Column("username", VARCHAR, unique=True, index=True)
+    )
+    email: str
+    password_hash: str = ""
+
+    favorite_podcasts: list[PodcastTable] = Relationship(
+        back_populates="user_favorites",
+        link_model=FavoritePodcastLink,
+    )

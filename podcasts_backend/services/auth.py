@@ -8,9 +8,10 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from ..models.auth import TokenData
-from ..models.users import User, UserInput, UserTable
+from ..models.models import UserTable
 from ..repository.db.postgres import engine
 from ..repository.users import UserRepository
+from ..schemas.users import User, UserInput, UserOutputWithId
 
 SECRET_KEY = os.getenv("ACCESS_TOKEN_SECRET_KEY") or ""
 ALGORITHM = os.getenv("ACCESS_TOKEN_ALGORITHM") or ""
@@ -47,7 +48,7 @@ def authenticate_user(username: str, password: str) -> UserTable:
     return user
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserTable:
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserOutputWithId:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -68,7 +69,8 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserTable
     user = repository.get_user(token_data.username)
     if user is None:
         raise credentials_exception
-    return user
+    user_output = UserOutputWithId(**user.dict())
+    return user_output
 
 
 def create_access_token(
