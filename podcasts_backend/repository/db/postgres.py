@@ -2,7 +2,7 @@ import os
 
 from sqlmodel import SQLModel, create_engine
 
-from ..repository import Repository
+from ..podcast_repository import Repository
 from ..vector_database.providers.milvus import MilvusDataStore
 
 DATABASE_URL = os.getenv("DATABASE_URL") or ""

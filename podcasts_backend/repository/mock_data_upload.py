@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from podcasts_backend.repository.repository import Repository
+from podcasts_backend.repository.podcast_repository import Repository
 
 from ..models.models import EpisodeModel, Podcast
 

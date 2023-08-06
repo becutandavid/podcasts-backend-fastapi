@@ -128,10 +128,11 @@ class Repository:
 
     def list_episodes_from_podcast(self, podcast_id: int) -> list[EpisodeTable]:
         with Session(self.db_session) as session:
-            episodes = session.exec(
-                select(EpisodeTable).where(EpisodeTable.podcast_id == podcast_id)
-            ).all()
-            return episodes
+            podcast = session.get(PodcastTable, podcast_id)
+            if podcast is not None:
+                return podcast.episodes
+            else:
+                raise ValueError("Podcast not found")
 
     def get_podcast(self, podcast_id: int) -> PodcastTable:
         with Session(self.db_session) as session:

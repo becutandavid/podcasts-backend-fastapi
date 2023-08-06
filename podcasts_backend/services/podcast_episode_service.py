@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from podcasts_backend.models.models import (
     EpisodeModel,
     EpisodeTable,
@@ -33,7 +35,11 @@ async def add_episodes(
 
 
 def list_podcasts() -> list[PodcastTable]:
-    return repository.list_podcasts()
+    try:
+        podcasts = repository.list_podcasts()
+        return podcasts
+    except ValueError:
+        raise HTTPException(status_code=404, detail="No podcasts in database")
 
 
 def get_podcast(podcast_id: int) -> PodcastTable | None:
@@ -44,4 +50,7 @@ def get_podcast(podcast_id: int) -> PodcastTable | None:
 
 
 def list_episodes_from_podcast(podcast_id: int) -> list[EpisodeTable]:
-    return repository.list_episodes_from_podcast(podcast_id)
+    try:
+        return repository.list_episodes_from_podcast(podcast_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Podcast not found")
