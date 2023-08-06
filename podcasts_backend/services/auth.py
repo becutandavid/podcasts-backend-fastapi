@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from typing import Annotated, Any
 
@@ -11,8 +12,11 @@ from ..models.users import User, UserInput, UserTable
 from ..repository.db.postgres import engine
 from ..repository.users import UserRepository
 
-SECRET_KEY = "ff8bd256474ad33fc290ac0134a6aa36a3396fba7b7241d115f71610351ccabe"
-ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("ACCESS_TOKEN_SECRET_KEY") or ""
+ALGORITHM = os.getenv("ACCESS_TOKEN_ALGORITHM") or ""
+
+assert SECRET_KEY != "", "ACCESS_TOKEN_SECRET_KEY environment variable must be set"
+assert ALGORITHM != "", "ACCESS_TOKEN_ALGORITHM environment variable must be set"
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -50,8 +54,12 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserTable
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")  # type: ignore
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
+        username = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
@@ -72,7 +80,11 @@ def create_access_token(
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode,
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
     return encoded_jwt
 
 
