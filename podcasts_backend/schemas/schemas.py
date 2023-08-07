@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from podcasts_backend.models.models import EpisodeModel, Podcast
+
 
 class EpisodeMetadata(BaseModel):
     podcast_id: int
@@ -7,6 +9,7 @@ class EpisodeMetadata(BaseModel):
     language: str | None
 
 
+# milvus queries
 class Episode(BaseModel):
     id: int
     metadata: EpisodeMetadata
@@ -18,6 +21,10 @@ class EpisodeVector(Episode):
 
 
 class EpisodeVectorWithScore(EpisodeVector):
+    score: float
+
+
+class EpisodeModelWithScore(EpisodeModel):
     score: float
 
 
@@ -44,3 +51,12 @@ class QueryResult(BaseModel):
 
 class ResponseQueryResult(BaseModel):
     results: list[QueryResult]
+
+
+class SemanticSearchByEpisodeDescriptionResult(BaseModel):
+    podcast: Podcast
+    relevant_episodes: list[EpisodeModelWithScore]
+
+
+class SemanticSearchByEpisodeDescriptionResults(BaseModel):
+    results: list[SemanticSearchByEpisodeDescriptionResult]

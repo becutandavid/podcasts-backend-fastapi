@@ -140,3 +140,17 @@ class Repository:
             if podcast is None:
                 raise ValueError("Podcast not found")
             return podcast
+
+    def get_episode(self, episode_id: int) -> EpisodeTable:
+        with Session(self.db_session) as session:
+            episode = session.get(EpisodeTable, episode_id)
+            if episode is None:
+                raise ValueError("Episode not found")
+            return episode
+
+    def get_podcast_from_episode_id(self, episode_id: int) -> PodcastTable:
+        with Session(self.db_session) as session:
+            episode = session.get(EpisodeTable, episode_id)
+            if episode is None:
+                raise ValueError("Episode not found")
+            return episode.podcast
