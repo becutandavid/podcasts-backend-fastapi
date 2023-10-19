@@ -1,23 +1,47 @@
-from datetime import datetime
-
 from sqlmodel import VARCHAR, Column, Field, Relationship, SQLModel
 
 
 class Podcast(SQLModel):
     podcast_id: int
+    url: str
     title: str
-    author: str | None
-    categories: str | None
-    description: str | None
-    explicit: bool | None
-    generator: str | None
-    imageURL: str | None
-    language: str | None
-    lastBuildDate: datetime | None
-    link: str | None
-    summary: str | None
-    owner_name: str | None
-    owner_email: str | None
+    lastUpdate: int
+    link: str
+    lastHttpStatus: int
+    dead: int
+    contentType: str
+    itunesId: int
+    originalUrl: str
+    itunesAuthor: str
+    itunesOwnerName: str
+    explicit: int
+    imageUrl: str
+    itunesType: str
+    generator: str
+    newestItemPubdate: int
+    language: str
+    oldestItemPubdate: int
+    episodeCount: int
+    popularityScore: int
+    priority: int
+    createdOn: int
+    updateFrequency: int
+    chash: str
+    host: str
+    newestEnclosureUrl: str
+    podcastGuid: str
+    description: str
+    category1: str
+    category2: str
+    category3: str
+    category4: str
+    category5: str
+    category6: str
+    category7: str
+    category8: str
+    category9: str
+    category10: str
+    newestEnclosureDuration: int
 
 
 class FavoritePodcastLink(SQLModel, table=True):
@@ -33,18 +57,34 @@ class PodcastTable(Podcast, table=True):
     )
 
 
+
 class EpisodeModel(SQLModel):
-    description: str | None
-    duration: int | None
-    enclosure: str
-    guid: str | None
-    keywords: str | None
-    link: str | None
-    ner: list[str] | None
+    episode_id: int
     podcast_id: int
-    pubDate: datetime | None
-    summary: str | None
     title: str
+    link: str
+    description: str
+    guid: str
+    datePublished: int
+    datePublishedPretty: str
+    dateCrawled: int
+    enclosureUrl: str
+    enclosureType: str
+    enclosureLength: int
+    duration: int
+    explicit: int
+    episode: str
+    episodeType: str
+    season: int
+    image: str
+    feedItunesId: int
+    feedImage: str
+    feedId: int
+    feedLanguage: str
+    feedDead: int
+    feedDuplicateOf: str
+    chaptersUrl: str
+    transcriptUrl: str
 
 
 class EpisodeTable(EpisodeModel, table=True):

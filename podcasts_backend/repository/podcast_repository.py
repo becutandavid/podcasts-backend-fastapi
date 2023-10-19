@@ -65,7 +65,7 @@ class Repository:
                 id=episode.episode_id,  # type: ignore
                 metadata=EpisodeMetadata(
                     podcast_id=episode.podcast_id,
-                    category=podcast.categories,
+                    category=podcast.category1,
                     language=podcast.language,
                 ),
                 text=episode.title,
@@ -107,7 +107,7 @@ class Repository:
                     id=episode.episode_id,  # type: ignore
                     metadata=EpisodeMetadata(
                         podcast_id=episode.podcast_id,
-                        category=podcast.categories,  # type: ignore
+                        category=podcast.category1,  # type: ignore
                         language=podcast.language,  # type: ignore
                     ),
                     text=episode.title,
