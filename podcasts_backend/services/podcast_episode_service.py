@@ -54,3 +54,17 @@ def list_episodes_from_podcast(podcast_id: int) -> list[EpisodeTable]:
         return podcast_repository.list_episodes_from_podcast(podcast_id)
     except ValueError:
         raise HTTPException(status_code=404, detail="Podcast not found")
+
+
+def get_latest_update_date() -> int:
+    """get latest update date, in unix time
+
+    Returns:
+        int: latest update date, in unix time
+    """
+    latest_podcast = podcast_repository.get_latest_podcast()
+    latest_episode = podcast_repository.get_latest_episode()
+
+    if latest_podcast > latest_episode:
+        return latest_podcast
+    return latest_episode

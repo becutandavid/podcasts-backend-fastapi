@@ -34,3 +34,9 @@ async def add_podcast(podcast: Podcast) -> PodcastTable:
 @router.post("/podcasts/add_podcasts", response_model=list[PodcastTable])
 async def add_podcasts(podcasts: list[Podcast]) -> list[PodcastTable]:
     return podcast_episode_service.add_podcasts(podcasts)
+
+
+@router.get("/podcasts/latest", response_model=int)
+async def get_latest_update_date() -> int:
+    """get latest update date, in unix time"""
+    return podcast_episode_service.get_latest_update_date()

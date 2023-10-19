@@ -57,7 +57,6 @@ class PodcastTable(Podcast, table=True):
     )
 
 
-
 class EpisodeModel(SQLModel):
     episode_id: int
     podcast_id: int

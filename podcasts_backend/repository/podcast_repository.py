@@ -154,3 +154,17 @@ class Repository:
             if episode is None:
                 raise ValueError("Episode not found")
             return episode.podcast
+
+    def get_latest_podcast(self) -> PodcastTable:
+        with Session(self.db_session) as session:
+            latest_podcast = session.exec(
+                select(PodcastTable).order_by(PodcastTable.lastUpdate)
+            ).first()
+            return latest_podcast
+
+    def get_latest_episode(self) -> EpisodeTable:
+        with Session(self.db_session) as session:
+            latest_episode = session.exec(
+                select(EpisodeTable).order_by(EpisodeTable.dateCrawled)
+            ).first()
+            return latest_episode
