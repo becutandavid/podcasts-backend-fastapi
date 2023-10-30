@@ -64,6 +64,9 @@ class Repository:
             session.commit()
             session.refresh(episode)
 
+            if episode.title is None and episode.description is None:
+                embedding_text = f"{podcast.title} {podcast.description}"
+            embedding_text = f"{episode.title} {episode.description}"
             episode_vector = Episode(
                 id=episode.episode_id,  # type: ignore
                 metadata=EpisodeMetadata(
@@ -71,7 +74,7 @@ class Repository:
                     category=podcast.category1,
                     language=podcast.language,
                 ),
-                text=episode.title,
+                text=embedding_text,
             )
             await self.vector_db_session.upsert([episode_vector])
             return episode
@@ -147,7 +150,7 @@ class Repository:
 
     def get_podcasts_count(self) -> int:
         with Session(self.db_session) as session:
-            count = session.exec(select(func.count(PodcastTable.podcast_id))).one()
+            count = session.exec(select(func.count(PodcastTable.podcast_id))).one()  # type: ignore
             return count
 
     def list_episodes_from_podcast(self, podcast_id: int) -> list[EpisodeTable]:
