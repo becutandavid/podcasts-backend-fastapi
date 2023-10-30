@@ -6,7 +6,6 @@ from ..models.models import (
     Podcast,
     PodcastTable,
 )
-
 from ..repository.db.postgres import podcast_repository
 
 
@@ -34,12 +33,27 @@ async def add_episodes(
     return await podcast_repository.add_many_episodes(episodes)
 
 
-def list_podcasts() -> list[PodcastTable]:
+def list_podcasts(limit: int, offset: int) -> list[PodcastTable]:
     try:
-        podcasts = podcast_repository.list_podcasts()
+        podcasts = podcast_repository.list_podcasts(limit, offset)
         return podcasts
     except ValueError:
-        raise HTTPException(status_code=404, detail="No podcasts in database")
+        return []
+
+
+def list_podcast_ids(limit: int, offset: int) -> list[int]:
+    try:
+        podcast_ids = podcast_repository.list_podcast_ids(limit, offset)
+        return podcast_ids
+    except ValueError:
+        return []
+
+
+def get_podcasts_count() -> int:
+    try:
+        return podcast_repository.get_podcasts_count()
+    except ValueError:
+        return 0
 
 
 def get_podcast(podcast_id: int) -> PodcastTable | None:
@@ -57,14 +71,37 @@ def list_episodes_from_podcast(podcast_id: int) -> list[EpisodeTable]:
 
 
 def get_latest_update_date() -> int:
-    """get latest update date, in unix time
+    """get latest update date, in unix time. Returns -1 if no podcasts or episodes in
+    database
 
     Returns:
         int: latest update date, in unix time
     """
-    latest_podcast = podcast_repository.get_latest_podcast()
-    latest_episode = podcast_repository.get_latest_episode()
+    try:
+        latest_podcast = podcast_repository.get_latest_updated_podcast()
+        latest_podcast_date = (
+            latest_podcast.lastUpdate if latest_podcast.lastUpdate else -1
+        )
+    except ValueError:
+        latest_podcast_date = -1
+    try:
+        latest_episode = podcast_repository.get_latest_episode()
+        latest_episode_date = (
+            latest_episode.dateCrawled if latest_episode.dateCrawled else -1
+        )
+    except ValueError:
+        latest_episode_date = -1
 
-    if latest_podcast > latest_episode:
-        return latest_podcast
-    return latest_episode
+    return max(latest_podcast_date, latest_episode_date)
+
+
+def get_latest_podcast_id() -> int:
+    """return the largest podcast id in the database
+
+    Returns:
+        int: largest podcast id in the database. Returns -1 if no podcasts in database.
+    """
+    try:
+        return podcast_repository.get_latest_podcast().podcast_id
+    except ValueError:
+        return -1

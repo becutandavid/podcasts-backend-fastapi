@@ -1,5 +1,6 @@
+from sqlalchemy import func
 from sqlalchemy.engine import Engine
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from podcasts_backend.models.models import (
     EpisodeModel,
@@ -29,7 +30,9 @@ class Repository:
         with Session(self.db_session) as session:
             already_in_db = session.exec(select(PodcastTable.podcast_id)).all()
             podcasts = [
-                PodcastTable.from_orm(obj)
+                PodcastTable.from_orm(
+                    obj, update={"episodes": [], "user_favorites": []}
+                )
                 for obj in objs
                 if obj.podcast_id not in already_in_db
             ]
@@ -90,10 +93,17 @@ class Repository:
         with Session(self.db_session) as session:
             episodes = []
             for obj in objs:
-                podcast = session.get(PodcastTable, obj.podcast_id)
+                podcast = session.exec(
+                    select(PodcastTable).where(
+                        col(PodcastTable.podcast_id) == obj.podcast_id
+                    )
+                ).first()
                 if not podcast:
                     raise ValueError("Podcast not found")
-                episode = EpisodeTable.from_orm(obj, update={"podcast": podcast})
+                episode = EpisodeTable.from_orm(
+                    obj,
+                    update={"podcast": podcast, "podcast_id": podcast.podcast_id},
+                )
                 episodes.append(episode)
 
             session.add_all(episodes)
@@ -121,10 +131,24 @@ class Repository:
                 raise ValueError("Failed to add all episodes")
         return episodes
 
-    def list_podcasts(self) -> list[PodcastTable]:
+    def list_podcasts(self, limit: int, offset: int) -> list[PodcastTable]:
         with Session(self.db_session) as session:
-            podcasts = session.exec(select(PodcastTable)).all()
+            podcasts = session.exec(
+                select(PodcastTable).offset(offset).limit(limit)
+            ).all()
             return podcasts
+
+    def list_podcast_ids(self, limit: int, offset: int) -> list[int]:
+        with Session(self.db_session) as session:
+            podcast_ids = session.exec(
+                select(PodcastTable.podcast_id).offset(offset).limit(limit)
+            ).all()
+            return podcast_ids
+
+    def get_podcasts_count(self) -> int:
+        with Session(self.db_session) as session:
+            count = session.exec(select(func.count(PodcastTable.podcast_id))).one()
+            return count
 
     def list_episodes_from_podcast(self, podcast_id: int) -> list[EpisodeTable]:
         with Session(self.db_session) as session:
@@ -155,11 +179,13 @@ class Repository:
                 raise ValueError("Episode not found")
             return episode.podcast
 
-    def get_latest_podcast(self) -> PodcastTable:
+    def get_latest_updated_podcast(self) -> PodcastTable:
         with Session(self.db_session) as session:
             latest_podcast = session.exec(
                 select(PodcastTable).order_by(PodcastTable.lastUpdate)
             ).first()
+            if latest_podcast is None:
+                raise ValueError("No podcasts in database")
             return latest_podcast
 
     def get_latest_episode(self) -> EpisodeTable:
@@ -167,4 +193,16 @@ class Repository:
             latest_episode = session.exec(
                 select(EpisodeTable).order_by(EpisodeTable.dateCrawled)
             ).first()
+
+            if latest_episode is None:
+                raise ValueError("No episodes in database")
             return latest_episode
+
+    def get_latest_podcast(self) -> PodcastTable:
+        with Session(self.db_session) as session:
+            latest_podcast = session.exec(
+                select(PodcastTable).order_by(col(PodcastTable.podcast_id).desc())
+            ).first()
+            if latest_podcast is None:
+                raise ValueError("No podcasts in database")
+            return latest_podcast

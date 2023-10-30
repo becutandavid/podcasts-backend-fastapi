@@ -1,47 +1,52 @@
+from sqlalchemy import BigInteger
 from sqlmodel import VARCHAR, Column, Field, Relationship, SQLModel
 
 
 class Podcast(SQLModel):
     podcast_id: int
-    url: str
-    title: str
-    lastUpdate: int
-    link: str
-    lastHttpStatus: int
-    dead: int
-    contentType: str
-    itunesId: int
-    originalUrl: str
-    itunesAuthor: str
-    itunesOwnerName: str
-    explicit: int
-    imageUrl: str
-    itunesType: str
-    generator: str
-    newestItemPubdate: int
-    language: str
-    oldestItemPubdate: int
-    episodeCount: int
-    popularityScore: int
-    priority: int
-    createdOn: int
-    updateFrequency: int
-    chash: str
-    host: str
-    newestEnclosureUrl: str
-    podcastGuid: str
-    description: str
-    category1: str
-    category2: str
-    category3: str
-    category4: str
-    category5: str
-    category6: str
-    category7: str
-    category8: str
-    category9: str
-    category10: str
-    newestEnclosureDuration: int
+    url: str | None = None
+    title: str | None = None
+    lastUpdate: int | None = None
+    link: str | None = None
+    lastHttpStatus: int | None = None
+    dead: int | None = None
+    contentType: str | None = None
+    itunesId: int | None = None
+    originalUrl: str | None = None
+    itunesAuthor: str | None = None
+    itunesOwnerName: str | None = None
+    explicit: int | None = None
+    imageUrl: str | None = None
+    itunesType: str | None = None
+    generator: str | None = None
+    newestItemPubDate: int | None = None
+    language: str | None = None
+    oldestItemPubDate: int | None = None
+    episodeCount: int | None = None
+    popularityScore: int | None = None
+    priority: int | None = None
+    createdOn: int | None = None
+    updateFrequency: int | None = None
+    chash: str | None = None
+    host: str | None = None
+    newestEnclosureUrl: str | None = None
+    podcastGuid: str | None = None
+    description: str | None = None
+    category1: str | None = None
+    category2: str | None = None
+    category3: str | None = None
+    category4: str | None = None
+    category5: str | None = None
+    category6: str | None = None
+    category7: str | None = None
+    category8: str | None = None
+    category9: str | None = None
+    category10: str | None = None
+    newestEnclosureDuration: int | None = None
+
+
+class Podcasts(SQLModel):
+    podcasts: list[Podcast]
 
 
 class FavoritePodcastLink(SQLModel, table=True):
@@ -60,34 +65,38 @@ class PodcastTable(Podcast, table=True):
 class EpisodeModel(SQLModel):
     episode_id: int
     podcast_id: int
-    title: str
-    link: str
-    description: str
-    guid: str
-    datePublished: int
-    datePublishedPretty: str
-    dateCrawled: int
-    enclosureUrl: str
-    enclosureType: str
-    enclosureLength: int
-    duration: int
-    explicit: int
-    episode: str
-    episodeType: str
-    season: int
-    image: str
-    feedItunesId: int
-    feedImage: str
-    feedId: int
-    feedLanguage: str
-    feedDead: int
-    feedDuplicateOf: str
-    chaptersUrl: str
-    transcriptUrl: str
+    title: str | None = None
+    link: str | None = None
+    description: str | None = None
+    guid: str | None = None
+    datePublished: int | None = None
+    datePublishedPretty: str | None = None
+    dateCrawled: int | None = None
+    enclosureUrl: str | None = None
+    enclosureType: str | None = None
+    enclosureLength: int | None = None
+    duration: int | None = None
+    explicit: int | None = None
+    episode: int | None = None
+    episodeType: str | None = None
+    season: int | None = None
+    image: str | None = None
+    feedItunesId: int | None = None
+    feedImage: str | None = None
+    feedId: int | None = None
+    feedLanguage: str | None = None
+    feedDead: int | None = None
+    feedDuplicateOf: str | None = None
+    chaptersUrl: str | None = None
+    transcriptUrl: str | None = None
+
+
+class Episodes(SQLModel):
+    episodes: list[EpisodeModel]
 
 
 class EpisodeTable(EpisodeModel, table=True):
-    episode_id: int | None = Field(primary_key=True, default=None)
+    episode_id: int = Field(sa_column=Column(BigInteger(), primary_key=True))
     podcast_id: int = Field(foreign_key="podcasttable.podcast_id")
     podcast: PodcastTable = Relationship(back_populates="episodes")
 
